@@ -1,0 +1,42 @@
+
+
+<div [style.width.px]='width' [style.height.px]='height'>
+
+  <pre>
+
+  <div id="textArea" [style.width.px]='width' [style.height.px]='height'
+    class="contactInput" contenteditable style="z-index: 2"
+       #contact (input)="onInput(contact, $event)"
+       (keyup)="onKeyup($event, dropdown, contact)"
+       (keyup.backspace)="onDelete(contact, $event)"
+       (keydown.backspace)="onUpdateSpans(contact, $event)"
+       (keydown.delete)="onDelete(contact, $event)"
+
+       [innerHTML]="formattedHTMLContacts | sanatizeHtml"></div>
+  </pre>
+  <div class="grabber" (mouseenter)="onMouseenter()" (mouseleave)="onMouseleave()"></div>
+
+</div>
+
+
+<ng-template #dropdown >
+  <div class="select-menu">
+
+    <div *ngIf="!options?.length && showCandidateList">No results found...</div>
+    <div
+      *ngFor="let option of options">
+      <button
+        [class.active]="isActive(option)"
+        (click)="select(option)">
+        {{ option.name }}
+      </button>
+    </div>
+
+
+  </div>
+</ng-template>
+
+
+<div>
+  <button (click)="submit()">submit</button> <button (click)="clear()">clear</button>
+</div>
