@@ -5,7 +5,7 @@
   <pre>
 
   <div id="textArea" [style.width.px]='width' [style.height.px]='height'
-    class="contactInput" contenteditable style="z-index: 2"
+    class="contactInput" contenteditable = true
        #contact (input)="onInput(contact, $event)"
        (keyup)="onKeyup($event, dropdown, contact)"
        (keyup.backspace)="onDelete(contact, $event)"
