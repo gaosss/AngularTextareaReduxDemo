@@ -111,6 +111,11 @@ export class MainComponent implements OnInit, OnDestroy {
 
 
   clear() {
+    var textDiv = document.getElementById('textArea');
+    textDiv.innerText = '';
+  }
+
+  clearStore() {
     this.user.updateState({
       action: ACTION_LOGOUT,
       payload: {}
