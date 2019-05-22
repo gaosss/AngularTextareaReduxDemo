@@ -10,6 +10,7 @@ export class SanatizeHtmlPipe implements PipeTransform {
 
   }
   transform(value: string): SafeHtml {
-    return this._sanatizer.bypassSecurityTrustHtml(value)  }
+    return this._sanatizer.bypassSecurityTrustHtml(value);
+  }
 
 }

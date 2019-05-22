@@ -2,41 +2,54 @@
 
 <div [style.width.px]='width' [style.height.px]='height'>
 
-  <pre>
 
-  <div id="textArea" [style.width.px]='width' [style.height.px]='height'
+
+  <div id="myDiv" [style.width.px]='width' [style.height.px]='height'
     class="contactInput" contenteditable = true
-       #contact (input)="onInput(contact, $event)"
-       (keyup)="onKeyup($event, dropdown, contact)"
-       (keyup.backspace)="onDelete(contact, $event)"
-       (keydown.backspace)="onUpdateSpans(contact, $event)"
-       (keydown.delete)="onDelete(contact, $event)"
+       (input)="userInput = $event.target.innerText"
+       (keyup)="onKeyup($event)"
+       (click)="onClickOnDiv($event)" (keydown)="onKeyDelOrBackspace($event)"
+       ></div>
 
-       [innerHTML]="formattedHTMLContacts | sanatizeHtml"></div>
-  </pre>
   <div class="grabber" (mouseenter)="onMouseenter()" (mouseleave)="onMouseleave()"></div>
 
 </div>
-
-
-<ng-template #dropdown >
-  <div class="select-menu">
-
-    <div *ngIf="!options?.length && showCandidateList">No results found...</div>
-    <div
-      *ngFor="let option of options">
-      <button
-        [class.active]="isActive(option)"
-        (click)="select(option)">
-        {{ option.name }}
-      </button>
-    </div>
-
-
-  </div>
-</ng-template>
-
-
+<br><br><br>
 <div>
   <button (click)="submit()">submit</button>
 </div>
+<br><br><br>
+<div *ngIf="indicatorForDropdownlist" >
+  <div *ngFor="let item of nameListFordisplay; let i = index">
+    <div  (mousedown)="onMouseDownSelectname(item)">
+      <a href="#" style="cursor:pointer">
+        {{item}}</a>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!--<ng-template #dropdown >-->
+  <!--<div class="select-menu">-->
+
+    <!--<div *ngIf="!options?.length && showCandidateList">No results found...</div>-->
+    <!--<div-->
+      <!--*ngFor="let option of options">-->
+      <!--<button-->
+        <!--[class.active]="isActive(option)"-->
+        <!--(click)="select(option)">-->
+        <!--{{ option.name }}-->
+      <!--</button>-->
+    <!--</div>-->
+
+
+  <!--</div>-->
+<!--</ng-template>-->
+
+
+

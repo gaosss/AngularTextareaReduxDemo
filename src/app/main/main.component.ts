@@ -1,21 +1,10 @@
-import {Component, HostListener, Input, NgZone, OnDestroy, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
-import {UserService} from "../user.service";
-import {ACTION_LOGIN, ACTION_LOGOUT} from "../store/actions/appActions";
-import Popper from 'popper.js';
-import {FormControl} from "@angular/forms";
-import {debounceTime} from "rxjs/operators";
-import {untilDestroyed} from "ngx-take-until-destroy";
+import {Component, HostListener, OnDestroy, OnInit} from '@angular/core';
+import {UserService} from '../user.service';
+import {ACTION_LOGIN, ACTION_LOGOUT} from '../store/actions/appActions';
 
-interface Contact {
-  key: number;
-  name: string;
-}
 
-let  msgCount = 0;
-const LCSSYELLOW = 'color:orange;font-size:15px;';
-const DT_CONTACT = 'contact';
-const DT_MSG = 'msg';
-
+const nameList = ['Tom', 'Jerry', 'Mike', 'John', 'Tony', 'Cathy',
+  'Jim', 'Oliver', 'Jack', 'Charlie', 'Harry', 'Jacob', 'George', 'Noah', 'Alfie', 'Oscar', 'James'];
 
 
 @Component({
@@ -24,36 +13,15 @@ const DT_MSG = 'msg';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent implements OnInit, OnDestroy {
-  @Input() idKey = 0;
-  @Input() options: Contact[] = [
-    {key: 0, name: 'Mark'},
-    {key: 1, name: 'Tony'},
-    {key: 2, name: 'Jobs'},
-    {key: 4, name: 'Evan'},
-    {key: 5, name: 'Ting'},
-    {key: 6, name: 'Tom'},
-    {key: 7, name: 'Jerry'},
-    {key: 8, name: 'Derek'},
-    {key: 9, name: 'John'},
-    {key: 10, name: 'Steven'},
-  ];
-
-  originalOptions: Contact[];
-  selectedOptions: Contact[];
-  userName = '';
-  showCandidateList: boolean;
-  view: any;
-  popperWindow:any;
-  popperRef: any;
-  spanArray: string[];
-  formattedHTMLContacts: string;
-  searchControl = new FormControl();
 
 
+  indicatorForDropdownlist: boolean;
+  postionForAt: number;
+  nameListFordisplay: string[];
+  nameSelected: string;
+  objDiv: HTMLElement;
 
-  tempMessage = '';
 
-  textInput: string;
   textInputs: string[];
 
 
@@ -63,17 +31,16 @@ export class MainComponent implements OnInit, OnDestroy {
   oldY: number;
   width: number;
   height: number;
+  userInput: string;
 
-  constructor(private user: UserService,
-              private vcr: ViewContainerRef,
-              private zone: NgZone) {
-
+  constructor(private user: UserService) {
+    this.indicatorForDropdownlist = false;
     this.textInputs = [];
-    this.showCandidateList = false;
-    this.originalOptions = [];
-    this.spanArray =[];
-    this.formattedHTMLContacts = '';
-    this.selectedOptions = [];
+
+    this.nameListFordisplay = new Array();
+    for (let i = 0; i < nameList.length; i++) {
+      this.nameListFordisplay[i] = nameList[i];
+    }
 
     this.resizeIndicator = false;
     this.grabber = false;
@@ -84,191 +51,104 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.originalOptions = [...this.options];
-    this.userName = 'Select...';
-    if (undefined !== this.idKey) {
-      this.userName = this.options.find(ele => ele.key === this.idKey).name;
-    }
 
-    this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        untilDestroyed(this)
-      )
-      .subscribe(val => this.search(val));
 
   }
 
   submit() {
-    var textDiv = document.getElementById('textArea');
+    var textDiv = document.getElementById('myDiv');
 
     this.textInputs.push(textDiv.innerText);
     this.user.updateState({
       action: ACTION_LOGIN,
-      payload: { users: this.textInputs }
+      payload: {users: this.textInputs}
     });
   }
 
+  onClickOnDiv($event: any) {
+    let element = ($event.target as HTMLElement);
 
-  clear() {
-    var textDiv = document.getElementById('textArea');
-    textDiv.innerText = '';
+    console.log('#####################---######################' + element);
+
+    element.focus();
   }
 
-  clearStore() {
-    this.user.updateState({
-      action: ACTION_LOGOUT,
-      payload: {}
-    });
-  }
+  onKeyDelOrBackspace(event: any) {
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      let element = (event.target as HTMLElement);
+      if (element.id === 'mySpan') {
+        console.log('???event is???  ' + element.id);
+        var myDiv = document.getElementById('myDiv');
+        myDiv.removeChild(element);
+      }
 
-
-  onKeyup(evt: KeyboardEvent, dropdownTpl: TemplateRef<any>, origin: HTMLElement) {
-
-    if (!this.showCandidateList && evt.key === '@') {
-      this.showCandidateList = true;
-      this.options = [...this.originalOptions];
-      this.open(dropdownTpl, origin);
     }
   }
 
-  onDelete(ele: HTMLDivElement, evt: any) {
-    let regexp = /<span.*?>.*?<\/span>/gs;
-    let aa: String ='';
-    let str = ele.innerHTML;
-    console.log(`[${++msgCount}---------->>>>>>.`);
-    console.log('%c===DELETE--> html', LCSSYELLOW, str);
-    let existedSpans = [...str.match(regexp)];
-    console.log('%c matched array', LCSSYELLOW, str.match(regexp));
-    console.log(`${msgCount}]<<<<<----------.`);
+  onMouseDownSelectname(item: string) {
+    console.log('onMouseDownSelectname' + item);
+    var objNew = document.createElement('span');
 
-    let arrIndex: number[] = [];
-    existedSpans.forEach((val, index) => {
-      if(val !== this.spanArray[index] && -1 !== val.indexOf(DT_CONTACT)) {
-        console.log('span index deleted, ', index);
-        existedSpans.splice(index, 1);
-        this.spanArray.splice(index, 1);
-        this.formattedHTMLContacts = this.spanArray.join(' ');
-      }
-    })
+    this.userInput = this.userInput + item;
+    this.indicatorForDropdownlist = false;
+    this.nameSelected = '@' + item + ' ';
+    this.objDiv = document.getElementById('myDiv');
+    var amountCut: number = this.objDiv.innerHTML.length - this.objDiv.innerHTML.lastIndexOf('@');
+    this.objDiv.innerHTML = this.objDiv.innerHTML.substring(0, this.objDiv.innerHTML.length - amountCut);
+
+    objNew.setAttribute('style', 'width:80px;z-index:9999; border:solid 1px red; position:relative;');
+    objNew.setAttribute('contenteditable', 'false');
+    objNew.id = 'mySpan';
+    objNew.innerText = this.nameSelected;
+    objNew.tabIndex = 0;
+
+    this.objDiv.appendChild(objNew);
+
+
   }
 
 
-  onInput(ele: HTMLDivElement, evt: any) {
-    const val = ele.innerHTML;
-    let regexp = /<span.*?>.+?<\/span>/gs;
-    let str = ele.innerHTML;
-    if (this.showCandidateList) {
-      this.search(this.getPartialName(ele.innerText));
+  strAfterCompareWithNamelist(str: string): string[] {
+
+    console.log('str input = ' + str);
+    const tmpArray = [];
+
+    if (str === '') {
+      console.log('str is ' + str);
+      return nameList;
     } else {
-      let msg = str.split(regexp);
-      msg = msg.filter(vl => vl.length > 0);
-      if (msg.length > 0) {
-        console.log('message not name is:', msg[msg.length - 1]);
-        let tempText = msg[msg.length - 1];
-        if (tempText[tempText.length - 1] === '@') {
-          tempText = tempText.slice(0, tempText.length - 1);
+
+      for (let i = 0; i < nameList.length; i++) {
+        if (nameList[i].toLowerCase().indexOf(str.toLowerCase()) !== -1) {
+          tmpArray.push(nameList[i]);
         }
-        console.log('temp msg:', tempText);
-        this.tempMessage = tempText;
       }
-    }
-    console.log(`${msgCount}]<<<<<----------.`);
-  }
-
-  onUpdateSpans(ele: HTMLDivElement, evt: any) {
-
-    let regexp = /<span.*?>.*?<\/span>/gs;
-    let str = ele.innerHTML;
-    console.log(`[${++msgCount}---------->>>>>>.`);
-    console.log('%c===UPDATE--> html', LCSSYELLOW, str);
-    this.spanArray = [...str.match(regexp)]
-  }
-
-
-
-
-
-  // onclick() {
-  //   console.log('textinput is ' + this.textInput);
-  //   this.textInput = 'hello world';
-  // }
-
-  search(value: string) {
-    this.options = this.originalOptions.filter((option: Contact) =>
-      option.name.toLowerCase().includes(value.toLowerCase()));
-  }
-
-  open(dropdownTpl: TemplateRef<any>, origin: HTMLElement) {
-    this.view = this.vcr.createEmbeddedView(dropdownTpl);
-    const dropdown = this.view.rootNodes[0];
-    if (this.popperWindow) {
-      document.body.removeChild(this.popperWindow);
-      this.popperWindow = undefined;
+      return tmpArray;
     }
 
-    this.popperWindow = document.body.appendChild(dropdown);
-    dropdown.style.width = `${origin.offsetWidth}px`;
-
-    this.zone.runOutsideAngular(() => {
-      this.popperRef = new Popper(origin, dropdown, {
-        removeOnDestroy: true
-      });
-    });
   }
 
+  onKeyup(event) {
+    console.log('key up and this.userinput is ' + this.userInput);
+    console.log('onkeyup event is ' + event);
+    if (this.userInput) {
+      const str = this.userInput.substring(this.userInput.length - 1);
+      console.log('str just pressed is = ' + str);
+      if (this.userInput && str === '@') {
+        this.indicatorForDropdownlist = true;
+        this.postionForAt = this.userInput.length;
+      }
+      const tmpData: string = this.userInput.substring(this.postionForAt);
+      console.log('value after @ is ' + tmpData);
 
-  close() {
-    this.showCandidateList = false;
-    this.options = [];
-    if (this.popperWindow) {
-      document.body.removeChild(this.popperWindow);
-      this.popperWindow = undefined;
+      this.nameListFordisplay = this.strAfterCompareWithNamelist(tmpData);
+
     }
   }
 
-
-
-  getPartialName(val: string) {
-    const res = val.lastIndexOf('@');
-    let newName = '';
-    if (-1 !== res) {
-      newName = val.substring(res + 1);
-    }
-    return newName;
-  }
-
-  isActive(option: Contact) {
-    return true;
-  }
-
-  select(option) {
-    if(this.tempMessage.length > 0) {
-      this.formattedHTMLContacts += this.formatMessage(this.tempMessage)
-      this.tempMessage = ''
-    }
-    this.selectedOptions.push(option);
-    this.formattedHTMLContacts += this.formatNames(option);
-
-    this.close();
-  }
-
-  formatMessage(msg: string) {
-    return `<span data-type="${DT_MSG}" data-id="" style="color: black">${msg}</span>`
-  }
-
-
-  formatNames(contact: Contact) {
-    let names = `<span data-type="${DT_CONTACT}" data-id="${contact.key}" style="border-radius: 10px;
-                  color: white;
-                  background-color: blueviolet;
-                  padding-left: 3px;" >${contact.name}</span> `;
-    return names;
-  }
 
   ngOnDestroy(): void {
   }
-
 
 
   //==================================resize part======
@@ -322,7 +202,6 @@ export class MainComponent implements OnInit, OnDestroy {
     console.log('mouse leave');
     //this.resizeIndicator = false;
   }
-
 
 
 }
